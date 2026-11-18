@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 22: DOM Manipulation Master Sandbox</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --card-radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 32px 16px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 2.25rem;
+      background: linear-gradient(135deg, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-muted);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+      color: #93c5fd;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input, select, button {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+    }
+
+    input, select {
+      background: #090d16;
+      color: var(--text);
+      flex: 1;
+      min-width: 180px;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button.accent {
+      background: var(--accent);
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    .output-box {
+      background: #090d16;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dom-node {
+      background: #334155;
+      padding: 10px 14px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--primary);
+      animation: pop 0.2s ease-out;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.97); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .node-meta {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .slider-row label {
+      width: 140px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .preview-box {
+      padding: 24px;
+      text-align: center;
+      border: 2px solid var(--primary);
+      border-radius: var(--card-radius);
+      background: #1e3a8a33;
+      margin-top: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .rect-stats {
+      margin-top: 12px;
+      font-family: monospace;
+      color: #38bdf8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Day 22: DOM Manipulation Lab</h1>
+      <p>Interactive playground for Node CRUD, Positions, Dataset reflection, and Dynamic CSS Variables</p>
+    </header>
+
+    <!-- SECTION 1: INSERTION & CRUD -->
+    <section class="card">
+      <h2>1. Node Insertion & Position API</h2>
+      <div class="controls">
+        <input type="text" id="nodeInput" placeholder="Enter node label..." value="Card Component" />
+        <select id="positionSelect">
+          <option value="beforeend">beforeend (append)</option>
+          <option value="afterbegin">afterbegin (prepend)</option>
+          <option value="beforebegin">beforebegin (outside before)</option>
+          <option value="afterend">afterend (outside after)</option>
+        </select>
+        <button id="addBtn" class="accent">+ Insert Element</button>
+        <button id="fragmentBtn">Batch 5 with Fragment</button>
+        <button id="clearBtn" class="danger">Clear Sandbox</button>
+      </div>
+
+      <div id="targetContainer" class="output-box">
+        <div class="dom-node" data-id="1">
+          <div>
+            <strong>Seed Node #1</strong>
+            <div class="node-meta">div[data-id="1"]</div>
+          </div>
+          <button class="danger remove-btn" style="padding: 4px 8px; font-size: 0.8rem;">Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: DYNAMIC CSS VARIABLES & RECT -->
+    <section class="card">
+      <h2>2. Dynamic CSS Variables & getBoundingClientRect()</h2>
+      <div class="slider-row">
+        <label for="radiusRange">Border Radius (<span id="radiusVal">8</span>px):</label>
+        <input type="range" id="radiusRange" min="0" max="40" value="8" />
+      </div>
+      <div class="slider-row">
+        <label for="paddingRange">Padding (<span id="paddingVal">24</span>px):</label>
+        <input type="range" id="paddingRange" min="8" max="48" value="24" />
+      </div>
+
+      <div id="dynamicBox" class="preview-box">
+        Live Computed Geometry Element
+      </div>
+      <div id="rectInfo" class="rect-stats">
+        Dimensions: calculating...
+      </div>
+    </section>
+  </div>
+
+  <!-- HTML Template Demonstration -->
+  <template id="nodeTemplate">
+    <div class="dom-node">
+      <div>
+        <strong class="title-slot"></strong>
+        <div class="node-meta meta-slot"></div>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button class="clone-btn" style="padding: 4px 8px; font-size: 0.8rem; background: #475569;">Clone</button>
+        <button class="danger remove-btn" style="padding: 4px 8px; font-size: 0.8rem;">Delete</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const nodeInput = document.getElementById('nodeInput');
+    const positionSelect = document.getElementById('positionSelect');
+    const addBtn = document.getElementById('addBtn');
+    const fragmentBtn = document.getElementById('fragmentBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const targetContainer = document.getElementById('targetContainer');
+    const template = document.getElementById('nodeTemplate');
+
+    let counter = 2;
+
+    function createNode(title) {
+      const clone = template.content.cloneNode(true);
+      const root = clone.querySelector('.dom-node');
+      const titleSlot = clone.querySelector('.title-slot');
+      const metaSlot = clone.querySelector('.meta-slot');
+
+      const id = counter++;
+      root.setAttribute('data-id', id);
+      root.dataset.timestamp = Date.now();
+      titleSlot.textContent = `${title} #${id}`;
+      metaSlot.textContent = `div[data-id="${id}"][data-timestamp="${root.dataset.timestamp}"]`;
+
+      // Setup remove button
+      clone.querySelector('.remove-btn').addEventListener('click', () => {
+        root.remove();
+      });
+
+      // Setup clone button
+      clone.querySelector('.clone-btn').addEventListener('click', () => {
+        const dup = root.cloneNode(true);
+        dup.dataset.id = counter++;
+        dup.querySelector('.title-slot').textContent += ' (Cloned)';
+        dup.querySelector('.remove-btn').addEventListener('click', () => dup.remove());
+        root.after(dup);
+      });
+
+      return root;
+    }
+
+    addBtn.addEventListener('click', () => {
+      const title = nodeInput.value.trim() || 'Dynamic Card';
+      const node = createNode(title);
+      const pos = positionSelect.value;
+
+      if (pos === 'beforebegin') {
+        targetContainer.insertAdjacentElement('beforebegin', node);
+      } else if (pos === 'afterbegin') {
+        targetContainer.insertAdjacentElement('afterbegin', node);
+      } else if (pos === 'afterend') {
+        targetContainer.insertAdjacentElement('afterend', node);
+      } else {
+        targetContainer.insertAdjacentElement('beforeend', node);
+      }
+    });
+
+    fragmentBtn.addEventListener('click', () => {
+      const fragment = document.createDocumentFragment();
+      for (let i = 1; i <= 5; i++) {
+        fragment.appendChild(createNode(`Batch Item ${i}`));
+      }
+      targetContainer.appendChild(fragment);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      targetContainer.innerHTML = '';
+    });
+
+    // Attach listener to seed node
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => e.target.closest('.dom-node').remove());
+    });
+
+    // CSS Variables & Geometry
+    const radiusRange = document.getElementById('radiusRange');
+    const paddingRange = document.getElementById('paddingRange');
+    const radiusVal = document.getElementById('radiusVal');
+    const paddingVal = document.getElementById('paddingVal');
+    const dynamicBox = document.getElementById('dynamicBox');
+    const rectInfo = document.getElementById('rectInfo');
+
+    function updateGeometry() {
+      const r = radiusRange.value;
+      const p = paddingRange.value;
+      radiusVal.textContent = r;
+      paddingVal.textContent = p;
+
+      dynamicBox.style.borderRadius = `${r}px`;
+      dynamicBox.style.padding = `${p}px`;
+
+      const rect = dynamicBox.getBoundingClientRect();
+      rectInfo.textContent = `Computed Geometry: width: ${Math.round(rect.width)}px | height: ${Math.round(rect.height)}px | x: ${Math.round(rect.x)} | y: ${Math.round(rect.y)}`;
+    }
+
+    radiusRange.addEventListener('input', updateGeometry);
+    paddingRange.addEventListener('input', updateGeometry);
+    window.addEventListener('resize', updateGeometry);
+    updateGeometry();
+  </script>
+</body>
+</html>
